@@ -8,8 +8,6 @@ import (
 	"syscall"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 
 	"github.com/arrowwhi/books_review_bot/internal/bot"
@@ -42,12 +40,6 @@ func main() {
 	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("postgres: %v", err)
-	}
-
-	sqlDB := stdlib.OpenDBFromPool(pool)
-	goose.SetDialect("postgres")
-	if err := goose.Up(sqlDB, "migrations"); err != nil {
-		log.Fatalf("migrations: %v", err)
 	}
 
 	bookRepo := postgres.NewBookRepo(pool)
