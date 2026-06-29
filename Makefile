@@ -1,7 +1,4 @@
-.PHONY: dev prod build test mock migrate-up migrate-down lint down
-
-include .env
-export
+.PHONY: dev prod build test mock migrate docker-migrate lint down docker-build
 
 dev:
 	docker compose --profile dev up
@@ -18,11 +15,14 @@ test:
 mock:
 	go generate ./...
 
-migrate-up:
-	goose -dir migrations postgres "$(DATABASE_URL)" up
+migrate:
+	go run ./cmd/migrate
 
-migrate-down:
-	goose -dir migrations postgres "$(DATABASE_URL)" down
+docker-build:
+	docker build --target prod -t books-bot .
+
+docker-migrate:
+	docker run --rm --env-file .env books-bot ./migrate
 
 lint:
 	golangci-lint run
