@@ -50,7 +50,7 @@ func (h *WantHandler) HandleMessage(ctx context.Context, bot *tgbotapi.BotAPI, m
 				tgbotapi.NewInlineKeyboardButtonData("❌ Отмена", "w:cancel"),
 			),
 		)
-		return sendMessageWithKeyboard(bot, chatID, "Введи автора (необязательно):", kb)
+		return sendMessageWithKeyboard(bot, chatID, "Введи автора \\(необязательно\\):", kb)
 
 	case session.StateWantAuthor:
 		sess.Draft.Author = text
