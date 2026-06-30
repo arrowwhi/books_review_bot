@@ -100,5 +100,5 @@ func extractUserID(update tgbotapi.Update) int64 {
 
 func sendErrorMessage(bot *tgbotapi.BotAPI, chatID int64) {
 	msg := tgbotapi.NewMessage(chatID, "⚠️ Что-то пошло не так. Попробуй ещё раз.")
-	bot.Send(msg)
+	bot.Send(msg) //nolint:errcheck
 }

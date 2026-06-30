@@ -38,7 +38,7 @@ func (c *client) Search(ctx context.Context, title string) ([]openlibrary.Book, 
 	if err != nil {
 		return nil, fmt.Errorf("googlebooks search: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	var result struct {
 		Items []struct {

@@ -72,7 +72,7 @@ func (c *client) Complete(ctx context.Context, prompt string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("claude complete: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
