@@ -14,7 +14,7 @@ import (
 	"github.com/arrowwhi/books_review_bot/internal/bot/handler"
 	"github.com/arrowwhi/books_review_bot/internal/bot/session"
 	claudeclient "github.com/arrowwhi/books_review_bot/internal/client/claude"
-	"github.com/arrowwhi/books_review_bot/internal/client/openlibrary"
+	"github.com/arrowwhi/books_review_bot/internal/client/googlebooks"
 	"github.com/arrowwhi/books_review_bot/internal/config"
 	"github.com/arrowwhi/books_review_bot/internal/repository/postgres"
 	"github.com/arrowwhi/books_review_bot/internal/service"
@@ -46,7 +46,7 @@ func main() {
 	genreRepo := postgres.NewGenreRepo(pool)
 	reminderRepo := postgres.NewReminderRepo(pool)
 
-	olClient := openlibrary.New(logger)
+	olClient := googlebooks.New(logger)
 	claudeClient := claudeclient.New(cfg.AnthropicKey, logger)
 
 	bookSvc := service.NewBookService(bookRepo, logger)

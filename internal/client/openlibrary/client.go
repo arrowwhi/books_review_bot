@@ -29,6 +29,7 @@ type client struct {
 	logger     *zap.Logger
 }
 
+// Deprecated: use googlebooks.New instead.
 func New(logger *zap.Logger) Client {
 	return &client{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
