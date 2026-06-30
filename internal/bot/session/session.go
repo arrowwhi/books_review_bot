@@ -59,8 +59,9 @@ type Draft struct {
 }
 
 type Session struct {
-	State       State
-	Draft       Draft
-	SearchQuery string
-	UpdatedAt   time.Time
+	State            State
+	Draft            Draft
+	SearchQuery      string
+	RecommendedBooks []domain.RecommendedBook
+	UpdatedAt        time.Time
 }

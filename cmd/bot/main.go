@@ -61,7 +61,7 @@ func main() {
 	wishlistH := handler.NewWishlistHandler(bookSvc, logger)
 	searchH := handler.NewSearchHandler(bookSvc, logger)
 	statsH := handler.NewStatsHandler(statsSvc, logger)
-	recommendH := handler.NewRecommendHandler(recommendSvc, logger)
+	recommendH := handler.NewRecommendHandler(recommendSvc, bookSvc, logger)
 	remindH := handler.NewRemindHandler(reminderSvc, logger)
 	helpH := handler.NewHelpHandler()
 
@@ -96,6 +96,7 @@ func main() {
 	router.RegisterCallback("b:", libraryH.HandleCallback)
 	router.RegisterCallback("s:", searchH.HandleCallback)
 	router.RegisterCallback("rm:", remindH.HandleCallback)
+	router.RegisterCallback("rec:", recommendH.HandleCallback)
 
 	router.RegisterState(session.StateAddTitle, wrapMsg(addH.HandleMessage))
 	router.RegisterState(session.StateAddAuthor, wrapMsg(addH.HandleMessage))

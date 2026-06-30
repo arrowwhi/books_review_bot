@@ -277,32 +277,32 @@ func (h *AddHandler) askAuthor(bot *tgbotapi.BotAPI, chatID int64) error {
 
 func (h *AddHandler) showOLResults(bot *tgbotapi.BotAPI, chatID int64, results []openlibrary.Book) error {
 	var sb strings.Builder
-	sb.WriteString("🔍 *Нашёл по названию:*\n\n")
-	for i, book := range results {
-		sb.WriteString(fmt.Sprintf("%d\\. %s\n", i+1, escapeMarkdown(book.Title)))
-	}
+	sb.WriteString("🔍 *Нашёл по названию:*\n")
 
-	var rows [][]tgbotapi.InlineKeyboardButton
+	numberBtns := make([]tgbotapi.InlineKeyboardButton, len(results))
 	for i, book := range results {
-		author := ""
+		sb.WriteString("\n")
+		author := "неизвестный автор"
 		if len(book.AuthorNames) > 0 {
 			author = book.AuthorNames[0]
 		}
-		btnText := fmt.Sprintf("%d. %s — %s", i+1, book.Title, author)
-		runes := []rune(btnText)
-		if len(runes) > 40 {
-			btnText = string(runes[:37]) + "..."
+		sb.WriteString(fmt.Sprintf("*%s*\n", escapeMarkdown(author)))
+		year := ""
+		if book.FirstPublishYear > 0 {
+			year = fmt.Sprintf(" \\(%d\\)", book.FirstPublishYear)
 		}
-		rows = append(rows, tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(btnText, fmt.Sprintf("a:s:%d", i)),
-		))
-	}
-	rows = append(rows, tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("❌ Не то", "a:s:skip"),
-		tgbotapi.NewInlineKeyboardButtonData("🚫 Отмена", "a:cancel"),
-	))
+		sb.WriteString(fmt.Sprintf("%d\\. «%s»%s\n", i+1, escapeMarkdown(book.Title), year))
 
-	kb := tgbotapi.NewInlineKeyboardMarkup(rows...)
+		numberBtns[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%d", i+1), fmt.Sprintf("a:s:%d", i))
+	}
+
+	kb := tgbotapi.NewInlineKeyboardMarkup(
+		numberBtns,
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("❌ Не то", "a:s:skip"),
+			tgbotapi.NewInlineKeyboardButtonData("🚫 Отмена", "a:cancel"),
+		),
+	)
 	return sendMessageWithKeyboard(bot, chatID, sb.String(), kb)
 }
 

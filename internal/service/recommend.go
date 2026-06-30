@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -22,18 +23,22 @@ func NewRecommendService(statsRepo repository.BookRepository, claude claude.Clie
 	return &RecommendSvc{statsRepo: statsRepo, claude: claude, logger: logger}
 }
 
-func (s *RecommendSvc) Recommend(ctx context.Context, userID int64) (string, error) {
+func (s *RecommendSvc) Recommend(ctx context.Context, userID int64) ([]domain.RecommendedBook, error) {
 	stats, err := s.statsRepo.GetStats(ctx, userID)
 	if err != nil {
-		return "", fmt.Errorf("service.Recommend: %w", err)
+		return nil, fmt.Errorf("service.Recommend: %w", err)
 	}
 	prompt := buildPrompt(stats)
 	s.logger.Info("recommend", zap.Int64("user_id", userID))
 	result, err := s.claude.Complete(ctx, prompt)
 	if err != nil {
-		return "", fmt.Errorf("service.Recommend: %w", err)
+		return nil, fmt.Errorf("service.Recommend: %w", err)
 	}
-	return result, nil
+	books, err := parseRecommendations(result)
+	if err != nil {
+		return nil, fmt.Errorf("service.Recommend: parse: %w", err)
+	}
+	return books, nil
 }
 
 func buildPrompt(stats *domain.Stats) string {
@@ -58,7 +63,40 @@ func buildPrompt(stats *domain.Stats) string {
 - Любимый аспект: %s
 - Топ книги: %s
 
-Порекомендуй 3 книги которые понравятся этому читателю.
-Формат: "Название" — Автор (Год) — одно предложение почему понравится.`,
+Порекомендуй ровно 3 книги, которые понравятся этому читателю.
+Верни ответ строго в виде JSON-массива без markdown-обёрток и пояснений:
+[{"title":"...","author":"...","year":2020,"reason":"одно предложение почему понравится"}]`,
 		stats.TotalBooks, stats.AvgRating, genresStr, stats.FavoriteAspect, topBooksStr)
+}
+
+func parseRecommendations(raw string) ([]domain.RecommendedBook, error) {
+	raw = strings.TrimSpace(raw)
+	// strip markdown code block if Claude wrapped it anyway
+	if idx := strings.Index(raw, "["); idx > 0 {
+		raw = raw[idx:]
+	}
+	if idx := strings.LastIndex(raw, "]"); idx >= 0 && idx < len(raw)-1 {
+		raw = raw[:idx+1]
+	}
+
+	var items []struct {
+		Title  string `json:"title"`
+		Author string `json:"author"`
+		Year   int    `json:"year"`
+		Reason string `json:"reason"`
+	}
+	if err := json.Unmarshal([]byte(raw), &items); err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %w (raw: %q)", err, raw)
+	}
+
+	books := make([]domain.RecommendedBook, 0, len(items))
+	for _, it := range items {
+		books = append(books, domain.RecommendedBook{
+			Title:  it.Title,
+			Author: it.Author,
+			Year:   it.Year,
+			Reason: it.Reason,
+		})
+	}
+	return books, nil
 }

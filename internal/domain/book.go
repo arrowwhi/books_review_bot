@@ -2,6 +2,13 @@ package domain
 
 import "time"
 
+type RecommendedBook struct {
+	Title  string
+	Author string
+	Year   int
+	Reason string
+}
+
 type BookStatus string
 
 const (

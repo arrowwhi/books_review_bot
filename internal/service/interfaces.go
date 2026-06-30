@@ -78,7 +78,7 @@ type StatsService interface {
 }
 
 type RecommendService interface {
-	Recommend(ctx context.Context, userID int64) (string, error)
+	Recommend(ctx context.Context, userID int64) ([]domain.RecommendedBook, error)
 }
 
 type ReminderService interface {

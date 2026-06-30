@@ -263,10 +263,10 @@ func (m *MockRecommendService) EXPECT() *MockRecommendServiceMockRecorder {
 }
 
 // Recommend mocks base method.
-func (m *MockRecommendService) Recommend(ctx context.Context, userID int64) (string, error) {
+func (m *MockRecommendService) Recommend(ctx context.Context, userID int64) ([]domain.RecommendedBook, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Recommend", ctx, userID)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].([]domain.RecommendedBook)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
