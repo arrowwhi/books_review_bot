@@ -46,7 +46,7 @@ func main() {
 	genreRepo := postgres.NewGenreRepo(pool)
 	reminderRepo := postgres.NewReminderRepo(pool)
 
-	olClient := googlebooks.New(logger)
+	olClient := googlebooks.New(cfg.GoogleBooksKey, logger)
 	claudeClient := claudeclient.New(cfg.AnthropicKey, logger)
 
 	bookSvc := service.NewBookService(bookRepo, logger)

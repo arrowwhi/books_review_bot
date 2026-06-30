@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,18 +17,23 @@ import (
 
 type client struct {
 	httpClient *http.Client
+	apiKey     string
 	logger     *zap.Logger
 }
 
-func New(logger *zap.Logger) openlibrary.Client {
+func New(apiKey string, logger *zap.Logger) openlibrary.Client {
 	return &client{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
+		apiKey:     apiKey,
 		logger:     logger,
 	}
 }
 
 func (c *client) Search(ctx context.Context, title string) ([]openlibrary.Book, error) {
 	apiURL := "https://www.googleapis.com/books/v1/volumes?q=intitle:" + url.QueryEscape(title) + "&maxResults=3"
+	if c.apiKey != "" {
+		apiURL += "&key=" + c.apiKey
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
 	if err != nil {
@@ -39,6 +45,11 @@ func (c *client) Search(ctx context.Context, title string) ([]openlibrary.Book, 
 		return nil, fmt.Errorf("googlebooks search: %w", err)
 	}
 	defer resp.Body.Close() //nolint:errcheck
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("googlebooks search: status %d: %s", resp.StatusCode, body)
+	}
 
 	var result struct {
 		Items []struct {
